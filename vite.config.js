@@ -4,5 +4,9 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/SRC-Chem-Inventory/'
+  base: process.env.NODE_ENV === 'production' ? '/your-repo-name/' : '/',
+  build: {
+    outDir: 'dist',
+    sourcemap: false
+  }
 })
