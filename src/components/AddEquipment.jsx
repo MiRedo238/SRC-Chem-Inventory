@@ -1,7 +1,9 @@
+// src/components/AddEquipment.jsx (updated for modal compatibility)
 import React, { useState } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Microscope } from 'lucide-react';
+import Autocomplete from './Autocomplete';
 
-const AddEquipment = ({ equipment, setEquipment, setCurrentView }) => {
+const AddEquipment = ({ setCurrentView, equipment, updateEquipment, addAuditLog, userRole, isModal, onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     model: '',
@@ -14,6 +16,12 @@ const AddEquipment = ({ equipment, setEquipment, setCurrentView }) => {
     assignedUser: ''
   });
 
+  // Get unique data for autocomplete
+  const equipmentNames = [...new Set(equipment.map(e => e.name))].map(name => ({ name }));
+  const equipmentModels = [...new Set(equipment.map(e => e.model))].map(model => ({ model }));
+  const equipmentLocations = [...new Set(equipment.map(e => e.location))].map(location => ({ location }));
+  const equipmentUsers = [...new Set(equipment.map(e => e.assignedUser).filter(Boolean))].map(user => ({ assignedUser: user }));
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const today = new Date().toISOString().split('T')[0];
@@ -21,50 +29,75 @@ const AddEquipment = ({ equipment, setEquipment, setCurrentView }) => {
     nextMaintenance.setMonth(nextMaintenance.getMonth() + 6);
     
     const newEquipment = {
-      id: equipment.length + 1,
-      ...formData,
+      id: Math.max(...equipment.map(e => e.id), 0) + 1,
+      name: formData.name,
+      model: formData.model,
+      serialId: formData.serialId,
+      status: formData.status,
+      location: formData.location,
+      purchaseDate: formData.purchaseDate,
+      warrantyExpiration: formData.warrantyExpiration,
+      condition: formData.condition,
       lastMaintenance: today,
       nextMaintenance: nextMaintenance.toISOString().split('T')[0],
       assignedUser: formData.assignedUser || null,
       maintenanceLog: []
     };
-    setEquipment([...equipment, newEquipment]);
-    setCurrentView('equipment');
+
+    updateEquipment(newEquipment);
+    addAuditLog('equipment', 'add', newEquipment.name, userRole);
+    
+    if (isModal) {
+      onClose();
+    } else {
+      setCurrentView('equipment');
+    }
+  };
+
+  const handleAutocompleteSelect = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
-    <div className="form-container">
-      <div className="form-header">
-        <button 
-          onClick={() => setCurrentView('equipment')}
-          className="back-button"
-        >
-          <ChevronLeft className="icon-sm" />
-        </button>
-        <h1 className="form-title">Add Equipment</h1>
-      </div>
+    <div>
+      {!isModal && (
+        <div className="detail-header">
+          <button 
+            onClick={() => setCurrentView('equipment')}
+            className="back-button"
+          >
+            <ChevronLeft className="back-icon" />
+          </button>
+          <h1 className="detail-title">
+            <Microscope className="inline mr-2" />
+            Add Equipment
+          </h1>
+        </div>
+      )}
 
-      <div className="form-content">
-        <form onSubmit={handleSubmit} className="equipment-form">
+      <div className="form-container">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-group">
             <label className="form-label">Equipment Name</label>
-            <input
-              type="text"
-              required
-              className="form-input"
+            <Autocomplete
               value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              onChange={(value) => setFormData(prev => ({ ...prev, name: value }))}
+              suggestions={equipmentNames}
+              placeholder="Enter equipment name"
+              onSelect={(item) => handleAutocompleteSelect('name', item.name)}
+              field="name"
             />
           </div>
 
           <div className="form-group">
             <label className="form-label">Model Number</label>
-            <input
-              type="text"
-              required
-              className="form-input"
+            <Autocomplete
               value={formData.model}
-              onChange={(e) => setFormData({...formData, model: e.target.value})}
+              onChange={(value) => setFormData(prev => ({ ...prev, model: value }))}
+              suggestions={equipmentModels}
+              placeholder="Enter model number"
+              onSelect={(item) => handleAutocompleteSelect('model', item.model)}
+              field="model"
             />
           </div>
 
@@ -79,7 +112,7 @@ const AddEquipment = ({ equipment, setEquipment, setCurrentView }) => {
             />
           </div>
 
-          <div className="form-row">
+          <div className="form-grid">
             <div className="form-group">
               <label className="form-label">Status</label>
               <select
@@ -88,7 +121,6 @@ const AddEquipment = ({ equipment, setEquipment, setCurrentView }) => {
                 onChange={(e) => setFormData({...formData, status: e.target.value})}
               >
                 <option value="Available">Available</option>
-                <option value="In Use">In Use</option>
                 <option value="Broken">Broken</option>
                 <option value="Under Maintenance">Under Maintenance</option>
               </select>
@@ -109,16 +141,17 @@ const AddEquipment = ({ equipment, setEquipment, setCurrentView }) => {
 
           <div className="form-group">
             <label className="form-label">Location</label>
-            <input
-              type="text"
-              required
-              className="form-input"
+            <Autocomplete
               value={formData.location}
-              onChange={(e) => setFormData({...formData, location: e.target.value})}
+              onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
+              suggestions={equipmentLocations}
+              placeholder="Enter location"
+              onSelect={(item) => handleAutocompleteSelect('location', item.location)}
+              field="location"
             />
           </div>
 
-          <div className="form-row">
+          <div className="form-grid">
             <div className="form-group">
               <label className="form-label">Purchase Date</label>
               <input
@@ -142,20 +175,22 @@ const AddEquipment = ({ equipment, setEquipment, setCurrentView }) => {
 
           <div className="form-group">
             <label className="form-label">Assigned User (Optional)</label>
-            <input
-              type="text"
-              className="form-input"
+            <Autocomplete
               value={formData.assignedUser}
-              onChange={(e) => setFormData({...formData, assignedUser: e.target.value})}
+              onChange={(value) => setFormData(prev => ({ ...prev, assignedUser: value }))}
+              suggestions={equipmentUsers}
+              placeholder="Enter user name"
+              onSelect={(item) => handleAutocompleteSelect('assignedUser', item.assignedUser)}
+              field="assignedUser"
             />
           </div>
 
-          <div className="form-actions">
+          <div className="flex justify-center pt-4">
             <button
               type="submit"
-              className="submit-button green"
+              className="form-button"
             >
-              Add
+              Add Equipment
             </button>
           </div>
         </form>

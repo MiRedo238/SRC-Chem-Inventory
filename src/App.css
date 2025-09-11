@@ -1,6 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 
 #root {
@@ -44,4 +41,25 @@
 
 .read-the-docs {
   color: #888;
+}
+.ghs-symbol-image {
+  width: 20px;
+  height: 20px;
+  margin-right: 4px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* For detail view - slightly larger */
+.detail-property .ghs-symbols .ghs-symbol-image {
+  width: 24px;
+  height: 24px;
+  margin-right: 6px;
+}
+
+.ghs-symbols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
 }

@@ -6,8 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "lucide-react": "^0.542.0",
@@ -26,10 +27,5 @@
     "globals": "^16.3.0",
     "vite": "^7.1.2"
   },
-  "homepage": "https://miredo238.github.io/SRC-Chem-Inventory/",
-  "scripts": {
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
-  }
+  "homepage": "https://miredo238.github.io/SRC-Chem-Inventory/"
 }
-
