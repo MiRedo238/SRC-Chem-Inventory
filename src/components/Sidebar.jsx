@@ -17,7 +17,7 @@ const Sidebar = ({ currentView, setCurrentView, userRole, className }) => {
     { id: 'chemicals', label: 'Chemicals', icon: FlaskConical },
     { id: 'equipment', label: 'Equipment', icon: Microscope },
     { id: 'log-usage', label: 'Log Chemical Usage', icon: Activity },
-    { id: 'chemical-outs', label: 'Chemical Outs', icon: MapPin },
+    /*{ id: 'chemical-outs', label: 'Chemical Outs', icon: MapPin },*/
     ...(isAdmin ? [
       { id: 'audit-logs', label: 'Audit Logs', icon: FileText }
     ] : [])
